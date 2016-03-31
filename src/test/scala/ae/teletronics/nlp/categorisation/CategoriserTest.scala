@@ -10,6 +10,14 @@ import Assert._
 class CategoriserTest {
 
   @Test
-  def testOK() = assertTrue(true)
+  def testExactMatch() = {
+    val cat = Category(name = "drugs", words = Array("cocaine"))
+    val subj = Categoriser(categories = Array(cat))
+    val result = subj.categorise("cocaine")
+
+    assertNotNull(result)
+    assertTrue(result.length == 1)
+    assertTrue(result.contains(cat.name))
+  }
 
 }
