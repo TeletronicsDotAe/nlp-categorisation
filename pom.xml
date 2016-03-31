@@ -93,11 +93,11 @@
         <executions>
           <execution>
             <id>scala-compile-first</id>
-            <phase>process-resources</phase>
+            <phase>prepare-package</phase>
             <goals>
               <goal>compile</goal>
             </goals>
-            <!-- configuration>
+            <configuration>
               <args>
                 <arg>-P:genjavadoc:out=${project.build.directory}/genjavadoc</arg>
               </args>
@@ -108,7 +108,7 @@
                   <version>0.9</version>
                 </compilerPlugin>
               </compilerPlugins>
-            </configuration -->
+            </configuration>
           </execution>
         </executions>
         <configuration>
