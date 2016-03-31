@@ -20,4 +20,14 @@ class CategoriserTest {
     assertTrue(result.contains(cat.name))
   }
 
+  @Test
+  def testNegativeMatch() = {
+    val cat = Category(name = "drugs", words = Array("cocaine"))
+    val subj = Categoriser(categories = Array(cat))
+    val result = subj.categorise("sunshine")
+
+    assertNotNull(result)
+    assertTrue(result.length == 0)
+  }
+
 }
