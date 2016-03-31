@@ -5,6 +5,7 @@ package ae.teletronics.nlp.categorisation
   */
 case class Categoriser(val categories: Array[Category]) {
   def categorise(text: String) : Array[String] = {
-    return null
+    val textWords = text.split("\\s")
+    return categories.filter(c => textWords.exists(c.words.contains)).map(c => c.name)
   }
 }
