@@ -34,6 +34,7 @@ class CategoriserTest {
     assertTrue(result.contains(cat1.name))
   }
 
+  @Test
   def testNegativeMatch() = {
     val cat = Category(name = "drugs", words = Array("cocaine"))
     val subj = Categoriser(categories = Array(cat))
