@@ -5,14 +5,16 @@ package ae.teletronics.nlp.categorisation
   */
 import org.junit._
 import Assert._
+import scala.collection.JavaConversions._
+
 
 @Test
 class CategoriserTest {
 
   @Test
   def testExactMatch() = {
-    val cat = Category(name = "drugs", words = Array("cocaine"))
-    val subj = new SimpleCategoriser(categories = Array(cat))
+    val cat = Category(name = "drugs", words = List("cocaine"))
+    val subj = new SimpleCategoriser(categories = List(cat))
     val result = subj.categorise("cocaine")
 
     assertNotNull(result)
@@ -22,11 +24,11 @@ class CategoriserTest {
 
   @Test
   def testThatUniqueCategoryIsReturned() = {
-    val cat1 = Category(name = "drugs1", words = Array("cocaine"))
-    val cat2 = Category(name = "drugs2", words = Array("smack"))
-    val cat3 = Category(name = "drugs3", words = Array("heroin"))
-    val cat4 = Category(name = "drugs4", words = Array("amphetamine"))
-    val subj = new SimpleCategoriser(categories = Array(cat1, cat2, cat3, cat4))
+    val cat1 = Category(name = "drugs1", words = List("cocaine"))
+    val cat2 = Category(name = "drugs2", words = List("smack"))
+    val cat3 = Category(name = "drugs3", words = List("heroin"))
+    val cat4 = Category(name = "drugs4", words = List("amphetamine"))
+    val subj = new SimpleCategoriser(categories = List(cat1, cat2, cat3, cat4))
     val result = subj.categorise("cocaine")
 
     assertNotNull(result)
@@ -36,8 +38,8 @@ class CategoriserTest {
 
   @Test
   def testNegativeMatch() = {
-    val cat = Category(name = "drugs", words = Array("cocaine"))
-    val subj = new SimpleCategoriser(categories = Array(cat))
+    val cat = Category(name = "drugs", words = List("cocaine"))
+    val subj = new SimpleCategoriser(categories = List(cat))
     val result = subj.categorise("sunshine")
 
     assertNotNull(result)
@@ -46,8 +48,8 @@ class CategoriserTest {
 
   @Test
   def testFuzzyMatch() = {
-    val cat = Category(name = "drugs", words = Array("cocaine"))
-    val subj = new FuzzyCategoriser(categories = Array(cat), 1)
+    val cat = Category(name = "drugs", words = List("cocaine"))
+    val subj = new FuzzyCategoriser(categories = List(cat), 1)
     val result = subj.categorise("cocaino")
 
     assertNotNull(result)
@@ -57,8 +59,8 @@ class CategoriserTest {
 
   @Test
   def testTooDistantMatch() = {
-    val cat = Category(name = "drugs", words = Array("cocaine"))
-    val subj = new FuzzyCategoriser(categories = Array(cat), 2)
+    val cat = Category(name = "drugs", words = List("cocaine"))
+    val subj = new FuzzyCategoriser(categories = List(cat), 2)
     val result = subj.categorise("kocoino") // levenshtein distance of 3 from cocaine
 
     assertNotNull(result)
@@ -67,11 +69,11 @@ class CategoriserTest {
 
   @Test
   def testMultipleWordsMultipleCategoriesFuzzyMatch() = {
-    val cat1 = Category(name = "drugs1", words = Array("cocaine"))
-    val cat2 = Category(name = "drugs2", words = Array("smack"))
-    val cat3 = Category(name = "drugs3", words = Array("heroin"))
-    val cat4 = Category(name = "drugs4", words = Array("amphetamine"))
-    val subj = new FuzzyCategoriser(Array(cat1, cat2, cat3, cat4), 2)
+    val cat1 = Category(name = "drugs1", words = List("cocaine"))
+    val cat2 = Category(name = "drugs2", words = List("smack"))
+    val cat3 = Category(name = "drugs3", words = List("heroin"))
+    val cat4 = Category(name = "drugs4", words = List("amphetamine"))
+    val subj = new FuzzyCategoriser(List(cat1, cat2, cat3, cat4), 2)
     val result = subj.categorise("cocaine smeck amphetaminex lalalala hiruen") // hiruen is distance 3 from heroin
 
     assertNotNull(result)
