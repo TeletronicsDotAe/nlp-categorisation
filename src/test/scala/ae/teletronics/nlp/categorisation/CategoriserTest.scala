@@ -7,6 +7,7 @@ package ae.teletronics.nlp.categorisation
 import org.junit._
 import Assert.assertThat
 import org.hamcrest.Matchers._
+
 import scala.collection.JavaConversions._
 
 
@@ -89,5 +90,16 @@ class CategoriserTest {
     val result = subj.categorise("gut")
 
     assertThat(result, contains(cat1.name))
+  }
+
+  @Test
+  def testDrugMatchSmackThreshold() = {
+    val drugs: Category = new Category("drugs", List("spliff", "cocaine", "heroin", "marijuana", "smack", "weed"))
+    val weapons: Category = new Category("weapons", List("gun", "pistol", "rifle", "ak-47", "9mm"))
+    val subj = new FuzzyCategoriser(List(drugs, weapons), 3, 0.25)
+
+    val result = subj.categorise("Luv u 2 seyy w all my soul we just got back n now were puttn up tha tree igot them each an xtra gift2 putunderit4 now we miss our mom loveu")
+
+    assertThat(result.length, is(0))
   }
 }
