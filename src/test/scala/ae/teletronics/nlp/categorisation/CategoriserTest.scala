@@ -84,12 +84,23 @@ class CategoriserTest {
   }
 
   @Test
-  def testPercentageMatch() = {
+  def testFailingPercentageMatch() = {
     val cat1 = Category(name = "weapons", words = List("gun"))
-    val subj = new FuzzyCategoriser(List(cat1), 3, 0.99)
-    val result = subj.categorise("cat")
+    val subj = new FuzzyCategoriser(List(cat1), 3, 0.33)
+    val result = subj.categorise("gut")
 
     assertNotNull(result)
     assertTrue(result.length == 0)
+  }
+
+  @Test
+  def testSucceedingPercentageMatch() = {
+    val cat1 = Category(name = "weapons", words = List("gun"))
+    val subj = new FuzzyCategoriser(List(cat1), 3, 0.34)
+    val result = subj.categorise("gut")
+
+    assertNotNull(result)
+    assertTrue(result.length == 1)
+    assertTrue(result.contains(cat1.name))
   }
 }
