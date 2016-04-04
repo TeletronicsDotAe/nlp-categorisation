@@ -57,7 +57,7 @@ class CategoriserTest {
     val subj = new FuzzyCategoriser(List(cat), 2, 1)
     val result = subj.categorise("kocoino") // levenshtein distance of 3 from cocaine
 
-    assertThat(result.categories.size(), is(0))
+    assertThat(result.categories.length, is(0))
   }
 
   @Test
@@ -78,7 +78,7 @@ class CategoriserTest {
     val subj = new FuzzyCategoriser(List(cat1), 3, 0.33)
     val result = subj.categorise("gut")
 
-    assertThat(result.categories.size(), is(0))
+    assertThat(result.categories.length, is(0))
   }
 
   @Test
@@ -98,7 +98,7 @@ class CategoriserTest {
 
     val result = subj.categorise("Luv u 2 seyy w all my soul we just got back n now were puttn up tha tree igot them each an xtra gift2 putunderit4 now we miss our mom loveu")
 
-    assertThat(result.categories.size(), is(0))
+    assertThat(result.categories.length, is(0))
   }
 
   @Test
@@ -110,15 +110,15 @@ class CategoriserTest {
     val result = subj.categorise("cocaino gu gn mj heroin")
 
     assertThat(result.categories, containsInAnyOrder(weapons.name, drugs.name))
-    assertThat(result.categories.size(), is(2))
+    assertThat(result.categories.length, is(2))
 
     assertThat(result.matchesForCategory(weapons.name).size(), is(2))
     assertThat(result.matchesForWordInCategory(weapons.name, "gun"), containsInAnyOrder("gu", "gn"))
 
-    assertThat(result.matchesForCategory(drugs.name).size(), is(2))
-    assertThat(result.matchesForWordInCategory(drugs.name, "cocaine").size(), is(1))
-    assertThat(result.matchesForWordInCategory(drugs.name, "cocaine").get(0), is("cocaino"))
-    assertThat(result.matchesForWordInCategory(drugs.name, "heroin").size(), is(1))
-    assertThat(result.matchesForWordInCategory(drugs.name, "heroin").get(0), is("heroin"))
+    assertThat(result.matchesForCategory(drugs.name).length, is(2))
+    assertThat(result.matchesForWordInCategory(drugs.name, "cocaine").length, is(1))
+    assertThat(result.matchesForWordInCategory(drugs.name, "cocaine")(0), is("cocaino"))
+    assertThat(result.matchesForWordInCategory(drugs.name, "heroin").length, is(1))
+    assertThat(result.matchesForWordInCategory(drugs.name, "heroin")(0), is("heroin"))
   }
 }
