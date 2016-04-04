@@ -1,10 +1,11 @@
 package ae.teletronics.nlp.categorisation
 
-import scala.math._
-
 /**
   * Created by Boris on 01-04-2016.
   */
+
+import scala.math._
+
 object Levenshtein {
   def distance(s1:String, s2:String)={
 
