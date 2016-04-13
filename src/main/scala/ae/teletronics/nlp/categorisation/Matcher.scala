@@ -6,4 +6,6 @@ package ae.teletronics.nlp.categorisation
 trait Matcher {
 
   def doMatch(sentence: String, categoryEntry: String): List[Match]
+
+  def name: String = this.getClass.getSimpleName
 }
