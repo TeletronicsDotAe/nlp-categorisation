@@ -5,5 +5,5 @@ package ae.teletronics.nlp.categorisation
   */
 trait Matcher {
 
-  def doMatch(sentence: String): List[Match]
+  def doMatch(sentence: String, categoryEntry: String): List[Match]
 }

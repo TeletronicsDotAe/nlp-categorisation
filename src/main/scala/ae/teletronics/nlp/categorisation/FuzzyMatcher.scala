@@ -5,5 +5,6 @@ package ae.teletronics.nlp.categorisation
   */
 class FuzzyMatcher(val maxDistance: Int, val maxDistanceAsPercentageOfWordLength: Double) extends Matcher {
 
-  override def doMatch(sentence: String): List[Match] = null
+  override def doMatch(sentence: String, categoryEntry: String): List[Match] = null
+
 }
