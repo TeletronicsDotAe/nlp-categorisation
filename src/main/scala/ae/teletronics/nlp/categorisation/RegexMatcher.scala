@@ -5,5 +5,7 @@ package ae.teletronics.nlp.categorisation
   */
 class RegexMatcher extends Matcher {
 
-  override def doMatch(sentence: String, categoryEntry: String): List[Match] = null
+  override def doMatch(sentence: String, categoryEntry: String): List[Match] = {
+    categoryEntry.r.findAllIn(sentence).map(Match).toList
+  }
 }
