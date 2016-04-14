@@ -3,9 +3,9 @@ package ae.teletronics.nlp.categorisation
 /**
   * Created by Boris on 04-04-2016.
   */
-case class CategoryMatch(categoryName: String, matches: java.util.List[WordMatch]) {
+case class CategoryMatch(categoryName: String, entryMatches: java.util.List[EntryMatch]) {
 
-  def getCategoryName: String = { categoryName }
+  def getCategoryName: String = categoryName
 
-  def getMatches: java.util.List[WordMatch] = { matches }
+  def getEntryMatches: java.util.List[EntryMatch] = entryMatches
 }
