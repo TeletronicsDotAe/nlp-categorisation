@@ -21,5 +21,3 @@ class Categoriser(categories: java.util.List[Category]) {
     matchers(category).map(p => EntryMatch(p.label, p.matcher.name, p.exactEntry, p.matcher.doMatch(sentence, p.exactEntry)))
   }
 }
-
-
