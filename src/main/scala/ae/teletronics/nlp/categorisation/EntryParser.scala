@@ -4,37 +4,34 @@ package ae.teletronics.nlp.categorisation
   * Created by Boris on 2016-04-13.
   */
 
-import scala.util
-
-object EntryParser extends {
+object EntryParser {
 
   val regexMatcher = new RegexMatcher
-  val fuzzyMatcher = new FuzzyMatcher(1, 0.1)
-  val strictMatcher = new FuzzyMatcher(0, 0)
+  val fuzzyMatcher = new FuzzyMatcher(2, 0.15)
+  val strictMatcher = new StrictMatcher
 
-  val signifierPattern = "([~/]?)"
-  val exactMatchPattern = "(.+)"
-  val optionalLabelPattern = "(/([^/]*))?"
-  val entryPattern = "^" + signifierPattern + exactMatchPattern + optionalLabelPattern + "$"
-  val entryParser = entryPattern.r("signifier", "exactMatch", "wholeLabel", "label")
+  val signifierParser = "^([~/]?)(.*)$".r
 
   def parse(entry: String): EntryParseResult ={
-    val matchResult = entryParser.findFirstMatchIn(entry)
-    val optionParseResult = matchResult.map(m => {
-      val signifier = m.group("signifier")
-      val exactMatch = m.group("exactMatch").trim
-      val optionalLabel = m.group("label").trim
-      val label = if (optionalLabel.isEmpty) exactMatch else optionalLabel
+    val matchResult = signifierParser.findFirstMatchIn(entry).get // signifierParser will always succeed
+    val signifier = matchResult.group(1)
+    val entryWithLabel = matchResult.group(2)
 
-      val matcher = signifier match {
-        case "/" => regexMatcher
-        case "~" => fuzzyMatcher
-        case _   => strictMatcher
-      }
+    val exactEntryAndLabel = if (entryWithLabel.contains("/")) {
+      val lastSlash = entryWithLabel.lastIndexOf("/")
+      val exactEntryPart = entryWithLabel.substring(0, lastSlash)
+      val labelPart = entryWithLabel.substring(lastSlash + 1)
+      (exactEntryPart, labelPart)
+    } else (entryWithLabel, entryWithLabel)
 
-      EntryParseResult(matcher, exactMatch, label)
-    })
+    val exactEntry = exactEntryAndLabel._1
+    val label = exactEntryAndLabel._2
+    val matcher = signifier match {
+      case "/" => regexMatcher
+      case "~" => fuzzyMatcher
+      case _   => strictMatcher
+    }
 
-    optionParseResult.getOrElse(EntryParseResult(strictMatcher, entry, entry))
+    EntryParseResult(matcher, label, exactEntry)
   }
 }
