@@ -11,37 +11,7 @@ import org.hamcrest.Matchers._
 import scala.collection.JavaConversions._
 
 @Test
-class CategoriserTest {
-
-  @Test
-  def testExactMatch() = {
-    val cat = Category("drugs", List("cocaine"))
-    val subj = new Categoriser(List(cat))
-    val result = subj.categorise("cocaine")
-
-    assertThat(categoryNames(result), contains(cat.name))
-  }
-
-  @Test
-  def testThatUniqueCategoryIsReturned() = {
-    val cat1 = Category("drugs1", List("cocaine"))
-    val cat2 = Category("drugs2", List("smack"))
-    val cat3 = Category("drugs3", List("heroin"))
-    val cat4 = Category("drugs4", List("amphetamine"))
-    val subj = new Categoriser(List(cat1, cat2, cat3, cat4))
-    val result = subj.categorise("cocaine")
-
-    assertThat(categoryNames(result), contains(cat1.name))
-  }
-
-  @Test
-  def testNegativeMatch() = {
-    val cat = Category("drugs", List("cocaine"))
-    val subj = new Categoriser(List(cat))
-    val result = subj.categorise("sunshine")
-
-    assertThat(categoryNames(result).length, is(0))
-  }
+class FuzzyCategoriserTest {
 
   @Test
   def testFuzzyMatch() = {
@@ -68,9 +38,9 @@ class CategoriserTest {
     val cat3 = Category("drugs3", List("~heroin"))
     val cat4 = Category("drugs4", List("~amphetamine"))
     val subj = new Categoriser(List(cat1, cat2, cat3, cat4))
-    val result = subj.categorise("cocaine smeck amphetaminex lalalala hiruen") // hiruen is distance 3 from heroin
+    val result = subj.categorise("cocaine smeck amphetaminex lalalala hiruen") // hiruen is distance 3 from heroin, smeck and smack are only distance 1, but the percentage distance is 20%, so no match.
 
-    assertThat(categoryNames(result), containsInAnyOrder(cat1.name, cat2.name, cat4.name))
+    assertThat(categoryNames(result), containsInAnyOrder(cat1.name, cat4.name))
   }
 
   @Test
@@ -84,9 +54,9 @@ class CategoriserTest {
 
   @Test
   def testSucceedingPercentageMatch() = {
-    val cat1 = Category("weapons", List("gun"))
+    val cat1 = Category("weapons", List("~gunnery"))
     val subj = new Categoriser(List(cat1))
-    val result = subj.categorise("gut")
+    val result = subj.categorise("guntery")
 
     assertThat(categoryNames(result), contains(cat1.name))
   }
@@ -103,24 +73,26 @@ class CategoriserTest {
   }
 
   @Test
-  def testNewReturnStructure() = {
+  def testDeepReturnStructure() = {
     val drugs: Category = new Category("drugs", List("~spliff", "~cocaine", "~heroin", "~marijuana", "~smack", "~weed"))
-    val weapons: Category = new Category("weapons", List("~gun", "~pistol", "~rifle", "~ak-47", "~9mm"))
+    val weapons: Category = new Category("weapons", List("~gunnery", "~pistol", "~winchester", "~ak-47", "~9mm"))
     val subj = new Categoriser(List(drugs, weapons))
 
-    val result = subj.categorise("cocaino gu gn mj heroin")
+    val result = subj.categorise("pistols winchesters cocaino gunnnns! gunner mj Heroin")
 
     assertThat(categoryNames(result), containsInAnyOrder(weapons.name, drugs.name))
     assertThat(categoryNames(result).length, is(2))
 
-    assertThat(matchesForCategory(result, weapons.name).size(), is(2))
-    assertThat(matchesForEntryInCategory(result, weapons.name, "gun"), containsInAnyOrder("gu", "gn"))
+    assertThat(matchesForCategory(result, weapons.name).size(), is(1))
+    assertThat(matchesForEntryInCategory(result, weapons.name, "winchester"), containsInAnyOrder("winchesters"))
+
+
 
     assertThat(matchesForCategory(result, drugs.name).length, is(2))
     assertThat(matchesForEntryInCategory(result, drugs.name, "cocaine").length, is(1))
     assertThat(matchesForEntryInCategory(result, drugs.name, "cocaine")(0), is("cocaino"))
     assertThat(matchesForEntryInCategory(result, drugs.name, "heroin").length, is(1))
-    assertThat(matchesForEntryInCategory(result, drugs.name, "heroin")(0), is("heroin"))
+    assertThat(matchesForEntryInCategory(result, drugs.name, "heroin")(0), is("Heroin"))
   }
 
   def categoryNames(categoryMatches: util.List[CategoryMatch]): util.List[String] = {
