@@ -9,7 +9,7 @@
 
   <groupId>ae.teletronics.nlp</groupId>
   <artifactId>categorisation</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
   <name>${project.artifactId}</name>
 
   <properties>
@@ -24,6 +24,21 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>${scala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mapdb</groupId>
+      <artifactId>mapdb</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.5.0</version>
     </dependency>
 
     <!-- Test -->
@@ -137,6 +152,32 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>external.atlassian.jgitflow</groupId>
+        <artifactId>jgitflow-maven-plugin</artifactId>
+        <version>1.0-m5.1</version>
+        <!-- See https://ecosystem.atlassian.net/browse/MJF-251 -->
+        <dependencies>
+          <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.11.0</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <enableSshAgent>true</enableSshAgent>
+          <pushReleases>true</pushReleases>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <allowSnapshots>true</allowSnapshots>
+          <enableFeatureVersions>true</enableFeatureVersions>
+          <flowInitContext>
+            <masterBranchName>master</masterBranchName>
+            <developBranchName>develop</developBranchName>
+            <releaseBranchPrefix>release-</releaseBranchPrefix>
+            <versionTagPrefix>${project.artifactId}-</versionTagPrefix>
+          </flowInitContext>
+        </configuration>
       </plugin>
     </plugins>
   </build>
