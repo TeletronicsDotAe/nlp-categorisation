@@ -1,6 +1,7 @@
 package ae.teletronics.nlp.categorisation.storage
 
 import java.nio.file.{Files, Paths}
+import java.util
 
 import ae.teletronics.nlp.categorisation.Category
 import org.junit.Assert._
@@ -34,7 +35,7 @@ class TopicStoreTest {
     // action
     assertNotNull(underTest.get(key))
     assertEquals(key, underTest.get(key).name)
-    assertEquals(List(), underTest.get(key).categories)
+    assertEquals(0, underTest.get(key).entries.size())
   }
 
   @Test
@@ -51,7 +52,7 @@ class TopicStoreTest {
     // start state
     underTest.create(key)
     assertNotNull(underTest.get(key))
-    val t = new Topic(key, List(new Category("cat1", null)))
+    val t = new Category(key, util.Arrays.asList("cat1"))
     // action
     assertNotNull(underTest.update(t))
   }
