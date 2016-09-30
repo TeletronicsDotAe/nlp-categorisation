@@ -1,5 +1,6 @@
 package ae.teletronics.nlp.categorisation.storage
 
+import ae.teletronics.nlp.categorisation.Category
 import org.apache.commons.lang3.SerializationUtils
 import org.mapdb.{DBMaker, HTreeMap, Serializer}
 
@@ -9,24 +10,24 @@ import org.mapdb.{DBMaker, HTreeMap, Serializer}
   */
 class TopicStore(dbFileName: String) {
 
-  def create(name: String): Topic = create(new Topic(name))
+  def create(name: String): Category = create(new Category(name))
 
-  def create(t: Topic): Topic = deserialize(topics(_.putIfAbsent(t.name, serialize(t))))
+  def create(t: Category): Category = deserialize(categories(_.putIfAbsent(t.name, serialize(t))))
 
-  def delete(name: String): Topic = deserialize(topics(_.remove(name)))
+  def delete(name: String): Category = deserialize(categories(_.remove(name)))
 
-  def get(name: String): Topic = deserialize(topics(_.get(name)))
+  def get(name: String): Category = deserialize(categories(_.get(name)))
 
-  def update(topic: Topic): Topic = deserialize(topics(_.replace(topic.name, serialize(topic))))
+  def update(topic: Category): Category = deserialize(categories(_.replace(topic.name, serialize(topic))))
 
-  def list(): List[Topic] = {
+  def list(): List[Category] = {
     import scala.collection.JavaConversions._
-    topics(_.getValues().toList)
+    categories(_.getValues().toList)
       .map(deserialize)
   }
 
 
-  private def topics[T](action: HTreeMap[String, Array[Byte]] => T): T = {
+  private def categories[T](action: HTreeMap[String, Array[Byte]] => T): T = {
   val db = DBMaker.fileDB(dbFileName).make
   val topics: HTreeMap[String, Array[Byte]] = db.hashMap("topics")
     .keySerializer(Serializer.STRING)
@@ -40,7 +41,7 @@ class TopicStore(dbFileName: String) {
     }
   }
 
-  private def serialize(t: Topic): Array[Byte] = if (t != null) SerializationUtils.serialize(t) else null
-  private def deserialize(bytes: Array[Byte]): Topic = if (bytes != null) SerializationUtils.deserialize(bytes) else null
+  private def serialize(t: Category): Array[Byte] = if (t != null) SerializationUtils.serialize(t) else null
+  private def deserialize(bytes: Array[Byte]): Category = if (bytes != null) SerializationUtils.deserialize(bytes) else null
 
 }
