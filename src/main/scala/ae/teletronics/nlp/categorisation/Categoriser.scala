@@ -15,13 +15,13 @@ class Categoriser(categories: List[Category]) extends CategoriserTrait {
 
   def categorise(sentence: String): List[CategoryMatch] = {
     categories
-      .map(c => CategoryMatch(c.name, matchCategory(sentence, c)))
+      .map(c => new CategoryMatch(c.name, matchCategory(sentence, c)))
       .filter(_.entryMatches.length > 0)
   }
 
   private def matchCategory(sentence: String, category: Category): List[EntryMatch] = {
     matchers(category)
-      .map(p => EntryMatch(p.label, p.matcher.name, p.exactEntry, p.matcher.doMatch(sentence, p.exactEntry)))
+      .map(p => new EntryMatch(p.label, p.matcher.name, p.exactEntry, p.matcher.doMatch(sentence, p.exactEntry)))
       .filter(_.matches.length > 0)
       .toList
   }
