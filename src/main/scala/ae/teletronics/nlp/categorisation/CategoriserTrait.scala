@@ -7,4 +7,5 @@ trait CategoriserTrait {
 
   def categorise(sentence: String): List[CategoryMatch]
 
+  def getCategories(): List[Category]
 }

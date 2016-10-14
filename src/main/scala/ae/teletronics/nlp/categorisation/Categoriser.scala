@@ -19,6 +19,8 @@ class Categoriser(categories: List[Category]) extends CategoriserTrait {
       .filter(_.entryMatches.length > 0)
   }
 
+  def getCategories(): List[Category] = categories
+
   private def matchCategory(sentence: String, category: Category): List[EntryMatch] = {
     matchers(category)
       .map(p => new EntryMatch(p.label, p.matcher.name, p.exactEntry, p.matcher.doMatch(sentence, p.exactEntry)))
