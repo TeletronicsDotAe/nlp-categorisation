@@ -1,9 +1,13 @@
 package ae.teletronics.nlp.categorisation
 
+import java.util.UUID
+
+import ae.teletronics.nlp.categorisation.storage.TopicStore
+
 /**
   * Created by hhravn on 31/03/16.
   */
-class Categoriser(categories: List[Category]) extends CategoriserTrait {
+class Categoriser(store: TopicStore) extends CategoriserTrait {
 
   import scala.collection.JavaConversions._
 
@@ -11,15 +15,22 @@ class Categoriser(categories: List[Category]) extends CategoriserTrait {
   val fuzzyMatcher = new FuzzyMatcher(2, 0.05)
   val regexMatcher = new RegexMatcher
 
-  val matchers = categories.map(c => c -> c.entries.map(EntryParser.parse)).toMap
+  val matchers = store.list().map(c => c -> c.entries.map(EntryParser.parse)).toMap
 
   def categorise(sentence: String): List[CategoryMatch] = {
-    categories
+    store
+      .list
       .map(c => new CategoryMatch(c.name, matchCategory(sentence, c)))
       .filter(_.entryMatches.length > 0)
   }
 
-  def getCategories(): List[Category] = categories
+  def getCategories(): List[Category] = store.list
+
+  def createCategory(name: String, entries: List[String]) = store.create(name, entries)
+
+  def deleteCategory(id: UUID): Category = store.delete(id)
+
+  def updateCategory(topic: Category): Category = store.update(topic)
 
   private def matchCategory(sentence: String, category: Category): List[EntryMatch] = {
     matchers(category)
@@ -27,5 +38,4 @@ class Categoriser(categories: List[Category]) extends CategoriserTrait {
       .filter(_.matches.length > 0)
       .toList
   }
-
 }
