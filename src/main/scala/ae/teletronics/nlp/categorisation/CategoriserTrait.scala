@@ -11,6 +11,8 @@ trait CategoriserTrait {
 
   def getCategories(): List[Category]
 
+  def getCategory(id: UUID): Option[Category]
+
   def createCategory(name: String, entries: List[String]): Category
 
   def deleteCategory(id: UUID): Category

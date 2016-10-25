@@ -26,6 +26,12 @@ class Categoriser(store: TopicStore) extends CategoriserTrait {
 
   def getCategories(): List[Category] = store.list
 
+  def getCategory(id: UUID): Option[Category] =
+    store.get(id) match {
+      case null => None
+      case obj  => Some(obj)
+    }
+
   def createCategory(name: String, entries: List[String]) = store.create(name, entries)
 
   def deleteCategory(id: UUID): Category = store.delete(id)
