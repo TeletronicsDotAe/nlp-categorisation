@@ -16,7 +16,14 @@ class TopicStore(dbFileName: String) {
 
   def create(name: String, entries: List[String]): Category = create(new Category(name, UUID.randomUUID(), entries))
 
-  def create(t: Category): Category = deserialize(categories(_.putIfAbsent(t.id, serialize(t))))
+  def create(t: Category): Category = deserialize(categories(map =>
+    if (map.contains(t.id))
+      throw new Exception("Cannot create category, id already exists: " + t.id)
+    else {
+      val value = serialize(t)
+      map.put(t.id, value)
+      value // put doesnt return the value, so have to return it explicitly
+    }))
 
   def delete(id: UUID): Category = deserialize(categories(_.remove(id)))
 

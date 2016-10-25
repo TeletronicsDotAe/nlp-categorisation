@@ -7,6 +7,7 @@ import java.util.UUID
 
 import ae.teletronics.nlp.categorisation.Category
 import org.junit.Assert._
+import org.junit.rules.ExpectedException
 import org.junit.{After, Before, Test}
 
 /**
@@ -31,11 +32,11 @@ class TopicStoreTest {
     new File(storageFile).getParentFile().mkdirs() // ensure path exists
   }
 
-  @Test
+  @Test(expected = classOf[Exception])
   def testCreate(): Unit = {
-    assertNull(underTest.create(newCategory))
-    // return old value if overriding
     assertNotNull(underTest.create(newCategory))
+    // throw exception if we try to create another category with the same id
+    underTest.create(newCategory)
   }
 
   @Test
