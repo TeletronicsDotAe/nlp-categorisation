@@ -9,7 +9,7 @@
 
   <groupId>ae.teletronics.nlp</groupId>
   <artifactId>categorisation</artifactId>
-  <version>1.5</version>
+  <version>1.6-SNAPSHOT</version>
   <name>${project.artifactId}</name>
 
   <properties>
