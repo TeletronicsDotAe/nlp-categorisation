@@ -7,7 +7,6 @@ import java.util.UUID
 
 import ae.teletronics.nlp.categorisation.Category
 import org.junit.Assert._
-import org.junit.rules.ExpectedException
 import org.junit.{After, Before, Test}
 
 /**

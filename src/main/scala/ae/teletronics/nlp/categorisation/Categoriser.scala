@@ -15,13 +15,13 @@ class Categoriser(store: TopicStore) extends CategoriserTrait {
   val fuzzyMatcher = new FuzzyMatcher(2, 0.05)
   val regexMatcher = new RegexMatcher
 
-  val matchers = store.list().map(c => c -> c.entries.map(EntryParser.parse)).toMap
+  var matchers = asMatchers() // TODO make functional (state changing)
 
   def categorise(sentence: String): List[CategoryMatch] = {
     store
       .list
       .map(c => new CategoryMatch(c.name, matchCategory(sentence, c)))
-      .filter(_.entryMatches.length > 0)
+      .filter(_.entryMatches.nonEmpty)
   }
 
   def getCategories(): List[Category] = store.list
@@ -32,16 +32,26 @@ class Categoriser(store: TopicStore) extends CategoriserTrait {
       case obj  => Some(obj)
     }
 
-  def createCategory(name: String, entries: List[String]) = store.create(name, entries)
+  def createCategory(name: String, entries: List[String]) = updateMatchers(store.create(name, entries))
 
-  def deleteCategory(id: UUID): Category = store.delete(id)
+  def deleteCategory(id: UUID): Category = updateMatchers(store.delete(id))
 
-  def updateCategory(topic: Category): Category = store.update(topic)
+  def updateCategory(topic: Category): Category = updateMatchers(store.update(topic))
 
   private def matchCategory(sentence: String, category: Category): List[EntryMatch] = {
     matchers(category)
       .map(p => new EntryMatch(p.label, p.matcher.name, p.exactEntry, p.matcher.doMatch(sentence, p.exactEntry)))
-      .filter(_.matches.length > 0)
+      .filter(_.matches.nonEmpty)
       .toList
+  }
+
+  private def updateMatchers[A](f: => A): A = {
+    val r = f
+    matchers = asMatchers()
+    r
+  }
+
+  private def asMatchers() = {
+    store.list().map(c => c -> c.entries.map(EntryParser.parse)).toMap
   }
 }

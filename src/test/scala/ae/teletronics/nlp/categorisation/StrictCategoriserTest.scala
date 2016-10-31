@@ -8,12 +8,11 @@ import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util
 import java.util.UUID
-import scala.collection.JavaConversions._
 
-import org.junit._
-import Assert.assertThat
 import ae.teletronics.nlp.categorisation.storage.TopicStore
 import org.hamcrest.Matchers._
+import org.junit.Assert.assertThat
+import org.junit._
 
 import scala.collection.JavaConversions._
 
@@ -82,6 +81,38 @@ class StrictCategoriserTest {
     assertThat(result.get(0).entryMatches.get(0).matches.length, is(1))
     assertThat(result.get(0).entryMatches.get(0).matches.get(0).word, is("coke"))
   }
+
+  @Test
+  def testCategoriserUpdated() = {
+    val cat = Category("drugs", dummyUUID, List("cocaine"))
+    val subj = new Categoriser(seededTopicStore(List(cat)))
+    val result = subj.categorise("cocaine")
+
+    assertThat(categoryNames(result), contains(cat.name))
+    // update topic store (create)
+    val weaponCategory = subj.createCategory("weapon", List("gun"))
+
+    // should still work
+    assertThat(categoryNames(subj.categorise("cocaine")), contains(cat.name))
+    // also new category
+    assertThat(categoryNames(subj.categorise("my gun is bigger than yours")), contains("weapon"))
+
+    // update topic store (update)
+    subj.updateCategory(new Category("weapon", weaponCategory.id, List("gun", "knife")))
+
+    // should still work
+    assertThat(categoryNames(subj.categorise("cocaine")), contains(cat.name))
+    // also new category
+    assertThat(categoryNames(subj.categorise("my knife is bigger than yours")), contains("weapon"))
+
+    // update topic store (delete)
+    subj.deleteCategory(weaponCategory.id)
+
+    // should still work
+    assertThat(categoryNames(subj.categorise("cocaine")), contains(cat.name))
+  }
+
+
 
   def categoryNames(categoryMatches: util.List[CategoryMatch]): util.List[String] = {
     categoryMatches.map(_.categoryName)
