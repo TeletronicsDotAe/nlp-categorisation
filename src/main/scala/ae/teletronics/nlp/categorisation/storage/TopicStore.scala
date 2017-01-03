@@ -17,7 +17,7 @@ class TopicStore(dbFileName: String) {
 
   def create(name: String, entries: List[String]): Category = create(new Category(name, UUID.randomUUID(), entries))
 
-  def create(t: Category): Category = deserialize(categories(map =>
+  def create(t: Category): Category = deserialize(writeCategories(map =>
   if (map.contains(t.id))
     throw new Exception("Cannot create category, id already exists: " + t.id)
   else {
@@ -26,25 +26,31 @@ class TopicStore(dbFileName: String) {
     value // put doesnt return the value, so have to return it explicitly
   }))
 
-  def delete(id: UUID): Category = deserialize(categories(_.remove(id)))
+  def delete(id: UUID): Category = deserialize(writeCategories(_.remove(id)))
 
-  def get(id: UUID): Category = deserialize(categories(_.get(id)))
+  def get(id: UUID): Category = deserialize(writeCategories(_.get(id)))
 
-  def update(topic: Category): Category = deserialize(categories(_.replace(topic.id, serialize(topic))))
+  def update(topic: Category): Category = deserialize(writeCategories(_.replace(topic.id, serialize(topic))))
 
   // useful for testing purposes
   def clearAll(): Unit = {
-    categories(_.clear())
+    writeCategories(_.clear())
   }
 
   def list(): List[Category] = {
-  import scala.collection.JavaConversions._
-  categories(_.getValues().toList)
-    .map(deserialize)
+    import scala.collection.JavaConversions._
+    readCategories()
+      .values
+      .map(deserialize)
+      .toList
   }
 
-  def categories[T](action: HTreeMap[UUID, Array[Byte]] => T): T = {
-    TopicStore.commitOnTopicsInDb(dbFileName, action)
+  def readCategories(): Map[UUID, Array[Byte]] = {
+    TopicStore.read(dbFileName)
+  }
+
+  def writeCategories[T](action: HTreeMap[UUID, Array[Byte]] => T): T = {
+    TopicStore.write(dbFileName, action)
   }
 
   private def serialize(t: Category): Array[Byte] = if (t != null) SerializationUtils.serialize(t) else null
@@ -54,8 +60,18 @@ class TopicStore(dbFileName: String) {
 object TopicStore {
 
   private var fileDbsMap: Map[String, DB] = Map[String, DB]()
+  private var topicsCache: Map[String, Map[UUID, Array[Byte]]] = Map[String, Map[UUID, Array[Byte]]]()
 
-  def commitOnTopicsInDb[T](dbFileName: String, action: HTreeMap[UUID, Array[Byte]] => T): T = {
+  def read(dbFileName: String): Map[UUID, Array[Byte]] = {
+    this.synchronized {
+      if (!topicsCache.containsKey(dbFileName)) {
+        topicsCache = topicsCache + (dbFileName -> readCacheForFile(dbFileName))
+      }
+      topicsCache(dbFileName)
+    }
+  }
+
+  def write[T](dbFileName: String, action: HTreeMap[UUID, Array[Byte]] => T): T = {
     this.synchronized {
       val db = dbForFile(dbFileName)
       val topics: HTreeMap[UUID, Array[Byte]] = db.hashMap("topics")
@@ -64,27 +80,40 @@ object TopicStore {
         .createOrOpen()
 
       val result = action(topics)
+      this.topicsCache = topicsCache.updated(dbFileName, topics.toMap)
       db.commit()
       result
     }
   }
 
-  private def dbForFile(file: String): DB = {
+  private def readCacheForFile(dbFileName: String): Map[UUID, Array[Byte]] = {
     this.synchronized {
-      val mapContains = fileDbsMap.containsKey(file)
-      val fileExists = Files.exists(Paths.get(file))
+      val db = dbForFile(dbFileName)
+      val topics: HTreeMap[UUID, Array[Byte]] = db.hashMap("topics")
+        .keySerializer(Serializer.UUID)
+        .valueSerializer(Serializer.BYTE_ARRAY)
+        .createOrOpen()
+
+      topics.toMap
+    }
+  }
+
+  private def dbForFile(dbFileName: String): DB = {
+    this.synchronized {
+      val mapContains = fileDbsMap.containsKey(dbFileName)
+      val fileExists = Files.exists(Paths.get(dbFileName))
       if (mapContains && fileExists) {
         // all is good
-        return fileDbsMap(file)
+        return fileDbsMap(dbFileName)
       } else if (!mapContains) {
         // When we start the service. The file may exist from a previous run.
-        val db = DBMaker.fileDB(file)
+        val db = DBMaker.fileDB(dbFileName)
           .make()
-        this.fileDbsMap = this.fileDbsMap + (file -> db)
+        this.fileDbsMap = this.fileDbsMap + (dbFileName -> db)
         return db
       } else {
         // we have the DB object in memory, but the backing file is missing. This is an error state
-        throw new Exception("Missing MapDb file: " + file)
+        throw new Exception("Missing MapDb file: " + dbFileName)
       }
     }
   }
