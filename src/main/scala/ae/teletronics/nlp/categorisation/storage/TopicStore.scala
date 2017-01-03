@@ -87,34 +87,30 @@ object TopicStore {
   }
 
   private def readCacheForFile(dbFileName: String): Map[UUID, Array[Byte]] = {
-    this.synchronized {
-      val db = dbForFile(dbFileName)
-      val topics: HTreeMap[UUID, Array[Byte]] = db.hashMap("topics")
-        .keySerializer(Serializer.UUID)
-        .valueSerializer(Serializer.BYTE_ARRAY)
-        .createOrOpen()
+    val db = dbForFile(dbFileName)
+    val topics: HTreeMap[UUID, Array[Byte]] = db.hashMap("topics")
+      .keySerializer(Serializer.UUID)
+      .valueSerializer(Serializer.BYTE_ARRAY)
+      .createOrOpen()
 
-      topics.toMap
-    }
+    topics.toMap
   }
 
   private def dbForFile(dbFileName: String): DB = {
-    this.synchronized {
-      val mapContains = fileDbsMap.containsKey(dbFileName)
-      val fileExists = Files.exists(Paths.get(dbFileName))
-      if (mapContains && fileExists) {
-        // all is good
-        return fileDbsMap(dbFileName)
-      } else if (!mapContains) {
-        // When we start the service. The file may exist from a previous run.
-        val db = DBMaker.fileDB(dbFileName)
-          .make()
-        this.fileDbsMap = this.fileDbsMap + (dbFileName -> db)
-        return db
-      } else {
-        // we have the DB object in memory, but the backing file is missing. This is an error state
-        throw new Exception("Missing MapDb file: " + dbFileName)
-      }
+    val mapContains = fileDbsMap.containsKey(dbFileName)
+    val fileExists = Files.exists(Paths.get(dbFileName))
+    if (mapContains && fileExists) {
+      // all is good
+      return fileDbsMap(dbFileName)
+    } else if (!mapContains) {
+      // When we start the service. The file may exist from a previous run.
+      val db = DBMaker.fileDB(dbFileName)
+        .make()
+      this.fileDbsMap = this.fileDbsMap + (dbFileName -> db)
+      return db
+    } else {
+      // we have the DB object in memory, but the backing file is missing. This is an error state
+      throw new Exception("Missing MapDb file: " + dbFileName)
     }
   }
 }
