@@ -5,7 +5,6 @@ package ae.teletronics.nlp.categorisation
   */
 
 import java.io.File
-import java.nio.file.{Files, Paths}
 import java.util
 import java.util.UUID
 import org.junit._
@@ -21,9 +20,14 @@ class FuzzyCategoriserTest {
   private val storageFile = "target/storage-test.db"
   private val dummyUUID = new UUID(1L, 1L)
 
+  @Before
+  def beforeTest(): Unit = {
+    topicStore().clearAll()
+  }
+
   @After
   def afterTest(): Unit = {
-    Files.deleteIfExists(Paths.get(storageFile))
+    topicStore().clearAll()
   }
 
   @Test
@@ -108,10 +112,14 @@ class FuzzyCategoriserTest {
     assertThat(matchesForEntryInCategory(result, drugs.name, "heroin")(0), is("Heroin"))
   }
 
-  def seededTopicStore(categories: List[Category]): TopicStore = {
+  def topicStore(): TopicStore = {
     val storage = storageFile
     new File(storage).getParentFile().mkdirs() // ensure path exists
-    val ts = new TopicStore(storage)
+    new TopicStore(storage)
+  }
+
+  def seededTopicStore(categories: List[Category]): TopicStore = {
+    val ts = topicStore()
     categories.foreach(cat => ts.create(cat.name, cat.entries.toList))
     ts
   }
