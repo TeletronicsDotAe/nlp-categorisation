@@ -82,6 +82,42 @@ class TopicStoreTest {
     assertEquals(0, underTest.list().size)
   }
 
+  // No asserts, but if the TopicStore is not threadsafe, then this method will (probably) crash.
+  @Test
+  def testMultiThreadedAccess(): Unit = {
+    val underTest = topicStore()
+    val reader = new Thread {
+      override def run: Unit = {
+        for (i <- 1 to 10) {
+          val cats = underTest.list()
+        }
+      }
+    }
+    val creater = new Thread {
+      override def run: Unit = {
+        for (i <- 1 to 10) {
+          underTest.create(i.toString, List(i.toString))
+        }
+      }
+    }
+    val deleter = new Thread {
+
+      override def run: Unit = {
+        for (i <- 1 to 10) {
+          underTest.clearAll()
+        }
+      }
+    }
+
+    reader.start()
+    creater.start()
+    deleter.start()
+
+    reader.join()
+    creater.join()
+    deleter.join()
+  }
+
   def topicStore(): TopicStore = {
     val storage = storageFile
     new File(storage).getParentFile().mkdirs() // ensure path exists
