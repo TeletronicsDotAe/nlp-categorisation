@@ -22,9 +22,14 @@ class RegexCategoriserTest {
   private val storageFile = "target/storage-test.db"
   private val dummyUUID = new UUID(1L, 1L)
 
+  @Before
+  def beforeTest(): Unit = {
+    topicStore().clearAll()
+  }
+
   @After
   def afterTest(): Unit = {
-    Files.deleteIfExists(Paths.get(storageFile))
+    topicStore().clearAll()
   }
 
   @Test
@@ -94,10 +99,14 @@ class RegexCategoriserTest {
     categoryMatches.map(_.categoryName)
   }
 
-  def seededTopicStore(categories: List[Category]): TopicStore = {
+  def topicStore(): TopicStore = {
     val storage = storageFile
     new File(storage).getParentFile().mkdirs() // ensure path exists
-    val ts = new TopicStore(storage)
+    new TopicStore(storage)
+  }
+
+  def seededTopicStore(categories: List[Category]): TopicStore = {
+    val ts = topicStore()
     categories.foreach(cat => ts.create(cat.name, cat.entries.toList))
     ts
   }

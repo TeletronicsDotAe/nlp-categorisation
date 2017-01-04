@@ -15,24 +15,24 @@ import org.junit.{After, Before, Test}
 class TopicStoreTest {
 
   private val storageFile = "target/storage-test.db"
-  private val underTest = new TopicStore(storageFile)
   private val key = new UUID(1L, 1L)
   private val name = "topic"
   private val emptyEntries = util.Arrays.asList[String]()
   private val newCategory = new Category(name, UUID.randomUUID(), emptyEntries)
 
-  @After
-  def afterTest(): Unit = {
-    Files.deleteIfExists(Paths.get(storageFile))
-  }
-
   @Before
   def beforeTest(): Unit = {
-    new File(storageFile).getParentFile().mkdirs() // ensure path exists
+    topicStore().clearAll()
+  }
+
+  @After
+  def afterTest(): Unit = {
+    topicStore().clearAll()
   }
 
   @Test(expected = classOf[Exception])
   def testCreate(): Unit = {
+    val underTest = topicStore()
     assertNotNull(underTest.create(newCategory))
     // throw exception if we try to create another category with the same id
     underTest.create(newCategory)
@@ -40,6 +40,7 @@ class TopicStoreTest {
 
   @Test
   def testGet(): Unit = {
+    val underTest = topicStore()
     // start state
     underTest.create(newCategory)
     // action
@@ -50,6 +51,7 @@ class TopicStoreTest {
 
   @Test
   def testList(): Unit = {
+    val underTest = topicStore()
     // start state
     underTest.create(name)
     // action
@@ -59,6 +61,7 @@ class TopicStoreTest {
 
   @Test
   def testUpdate(): Unit = {
+    val underTest = topicStore()
     // start state
     underTest.create(newCategory)
     assertNotNull(underTest.get(newCategory.id))
@@ -69,6 +72,7 @@ class TopicStoreTest {
 
   @Test
   def testDelete(): Unit = {
+    val underTest = topicStore()
     // start state
     underTest.create(newCategory)
     // action
@@ -76,5 +80,47 @@ class TopicStoreTest {
     // verify
     assertNotNull(underTest.list())
     assertEquals(0, underTest.list().size)
+  }
+
+  // No asserts, but if the TopicStore is not threadsafe, then this method will (probably) crash.
+  @Test
+  def testMultiThreadedAccess(): Unit = {
+    val underTest = topicStore()
+    val reader = new Thread {
+      override def run: Unit = {
+        for (i <- 1 to 10) {
+          val cats = underTest.list()
+        }
+      }
+    }
+    val creater = new Thread {
+      override def run: Unit = {
+        for (i <- 1 to 10) {
+          underTest.create(i.toString, List(i.toString))
+        }
+      }
+    }
+    val deleter = new Thread {
+
+      override def run: Unit = {
+        for (i <- 1 to 10) {
+          underTest.clearAll()
+        }
+      }
+    }
+
+    reader.start()
+    creater.start()
+    deleter.start()
+
+    reader.join()
+    creater.join()
+    deleter.join()
+  }
+
+  def topicStore(): TopicStore = {
+    val storage = storageFile
+    new File(storage).getParentFile().mkdirs() // ensure path exists
+    new TopicStore(storage)
   }
 }
